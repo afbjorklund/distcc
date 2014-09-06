@@ -31,16 +31,6 @@
  *
  * Daemon parent.  Accepts connections, forks, etc.
  *
- * @todo Quite soon we need load management.  Basically when we think
- * we're "too busy" we should stop accepting connections.  This could
- * be because of the load average, or because too many jobs are
- * running, or perhaps just because of a signal from the administrator
- * of this machine.  In that case we want to do a blocking wait() to
- * find out when the current jobs are done, or perhaps a sleep() if
- * we're waiting for the load average to go back down.  However, we
- * probably ought to always keep at least one job running so that we
- * can make progress through the queue.  If you don't want any work
- * done, you should kill the daemon altogether.
  **/
 
 #include <config.h>
@@ -87,6 +77,8 @@ int dcc_nkids = 0;
  **/
 int dcc_max_kids = 0;
 
+/* The maximum load average we want to allow. Set to 0.0 for unlimited. */
+double dcc_max_load = 0.0;
 
 /**
  * Be a standalone server, with responsibility for sockets and forking
@@ -121,6 +113,11 @@ int dcc_standalone_server(void)
         dcc_max_kids = 2 + n_cpus;
 
     rs_log_info("allowing up to %d active jobs", dcc_max_kids);
+
+    dcc_max_load = (double) arg_max_load;
+
+    if (dcc_max_load > 0.0)
+        rs_log_info("allowing up to %.1f load average", dcc_max_load);
 
     if (!opt_no_detach) {
         /* Don't go into the background until we're listening and

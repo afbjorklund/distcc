@@ -31,6 +31,7 @@ extern int arg_stats;
 extern int arg_stats_port;
 extern int opt_log_level_num;
 extern int arg_max_jobs;
+extern int arg_max_load;
 extern const char *arg_pid_file;
 extern int opt_no_fork;
 extern int opt_no_prefork;

@@ -54,5 +54,6 @@ extern const char *opt_user;
 
 extern int dcc_max_kids;
 extern int dcc_nkids;
+extern double dcc_max_load;
 
 extern volatile pid_t dcc_master_pid;

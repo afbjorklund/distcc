@@ -55,6 +55,12 @@ int opt_niceness = 5;           /* default */
  **/
 int arg_max_jobs = 0;
 
+/**
+ * Maximum load average (1 minute) to aim for.
+ * If zero, then don't throttle on load at all.
+ **/
+int arg_max_load = 0;
+
 #ifdef HAVE_GSSAPI
 /* If true perform GSS-API based authentication. */
 int opt_auth_enabled = 0;
@@ -131,6 +137,7 @@ const struct poptOption options[] = {
     { "log-level", 0,    POPT_ARG_STRING, 0, opt_log_level, 0, 0 },
     { "log-stderr", 0,   POPT_ARG_NONE, &opt_log_stderr, 0, 0, 0 },
     { "job-lifetime", 0, POPT_ARG_INT, &opt_job_lifetime, 'l', 0, 0 },
+    { "max-load", 'm',   POPT_ARG_INT, &arg_max_load, 'm', 0, 0 },
     { "nice", 'N',       POPT_ARG_INT,  &opt_niceness,  0, 0, 0 },
     { "no-detach", 0,    POPT_ARG_NONE, &opt_no_detach, 0, 0, 0 },
     { "no-fifo", 0,      POPT_ARG_NONE, &opt_no_fifo, 0, 0, 0 },
@@ -172,7 +179,8 @@ static void distccd_show_usage(void)
 "    -N, --nice LEVEL           lower priority, 20=most nice\n"
 "    --user USER                if run by root, change to this persona\n"
 "    --jobs, -j LIMIT           maximum tasks at any time\n"
-"    --job-lifetime SECONDS     maximum lifetime of a compile request\n"
+"    --max-load, -m LOADAVG     maximum load average to aim for\n"
+"    --job-lifetime, -l SECONDS maximum lifetime of a compile request\n"
 "  Networking:\n"
 "    -p, --port PORT            TCP port to listen on\n"
 "    --listen ADDRESS           IP address to listen on\n"
@@ -281,6 +289,12 @@ int distccd_parse_options(int argc, const char **argv)
                 rs_log_error("--jobs argument must be between 1 and 200");
                 exitcode = EXIT_BAD_ARGUMENTS;
                 goto out_exit;
+            }
+            break;
+
+        case 'm':
+            if (arg_max_load < 0) {
+                arg_max_load = 0;
             }
             break;
 

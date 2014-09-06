@@ -116,6 +116,12 @@ Sets a limit on the number of jobs that can be accepted at any time.
 By default this is set to two greater than the number of CPUs on the
 machine, to allow for some processes being blocked on network IO.
 (Daemon mode only.)
+.TP
+.B -m, --max-load LOADAVG
+Sets a limit on load average, when we want to stop accepting multiple
+new jobs until the load average has gone down below the limit again.
+Default is 0 (unlimited). The 1 minute load average is being used.
+(Daemon mode only.)
 .TP 
 .B -N, --nice  NICENESS
 Makes the daemon more nice about giving up the CPU to other tasks on

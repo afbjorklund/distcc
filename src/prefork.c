@@ -120,8 +120,23 @@ void dcc_manage_kids(int listen_fd) {
  **/
 static void dcc_create_kids(int listen_fd) {
     pid_t kid;
+    double loadavg[3];
 
     while (dcc_nkids < dcc_max_kids) {
+        if (dcc_max_load > 0.0) {
+           /* Load management. When we think we're "too busy" we
+            * stop creating new children. We ought to always keep
+            * at least one job running so that we can make progress
+            * through the queue. If you don't want any work done,
+            * you should kill the daemon altogether.
+            */
+            dcc_getloadavg(loadavg);
+            if (loadavg[0] > dcc_max_load) {
+                rs_log_info("max load: %.1f > %.1f", loadavg[0], dcc_max_load);
+                if (dcc_nkids >= 1)
+                    break;
+            }
+        }
         if ((kid = fork()) == -1) {
             rs_log_error("fork failed: %s", strerror(errno));
             dcc_exit(EXIT_OUT_OF_MEMORY); /* probably */
@@ -152,6 +167,7 @@ static int dcc_preforked_child(int listen_fd)
 {
     int ireq;
     const int child_lifetime = 50;
+    double loadavg[3];
 
     for (ireq = 0; ireq < child_lifetime; ireq++) {
         int acc_fd;
@@ -188,6 +204,19 @@ static int dcc_preforked_child(int listen_fd)
                            (struct sockaddr *) &cli_addr, cli_len);
 
         dcc_close(acc_fd);
+
+        if (dcc_max_load > 0.0) {
+            /* Quit this child if the load average is too high.
+             * Let parent start another, when it is back down.
+             */
+            dcc_getloadavg(loadavg);
+            if (loadavg[0] > dcc_max_load) {
+                rs_log_info("max load: %.1f > %.1f", loadavg[0], dcc_max_load);
+
+                return 0;
+            }
+        }
+
     }
 
     rs_log_info("worn out");
