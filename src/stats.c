@@ -382,6 +382,7 @@ dcc_other %d\n\
 dcc_longest_job %s\n\
 dcc_longest_job_compiler %s\n\
 dcc_longest_job_time_msecs %d\n\
+dcc_num_kids %d\n\
 dcc_max_kids %d\n\
 dcc_avg_kids1 %d\n\
 dcc_avg_kids2 %d\n\
@@ -428,6 +429,7 @@ dcc_free_space %d MB\n\
                                dcc_stats.longest_job_name,
                                dcc_stats.longest_job_compiler,
                                dcc_stats.longest_job_time,
+                               dcc_nkids,
                                dcc_max_kids,
                                dcc_stats.kids_avg[0],
                                dcc_stats.kids_avg[1],
