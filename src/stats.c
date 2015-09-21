@@ -388,6 +388,7 @@ dcc_avg_kids1 %d\n\
 dcc_avg_kids2 %d\n\
 dcc_avg_kids3 %d\n\
 dcc_current_load %d\n\
+dcc_max_load %d\n\
 dcc_load1 %1.2lf\n\
 dcc_load2 %1.2lf\n\
 dcc_load3 %1.2lf\n\
@@ -435,6 +436,7 @@ dcc_free_space %d MB\n\
                                dcc_stats.kids_avg[1],
                                dcc_stats.kids_avg[2],
                                dcc_getcurrentload(),
+                               (int) dcc_max_load,
                                loadavg[0], loadavg[1], loadavg[2],
                                ct[0], ct[1], ct[2],
                                num_D, max_RSS, max_RSS_name,
