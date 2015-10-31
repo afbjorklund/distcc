@@ -90,7 +90,7 @@ int dcc_preforking_parent(int listen_fd)
             dcc_create_kids(listen_fd);
 
             /* wait for any children to exit, and then start some more */
-            dcc_reap_kids(TRUE);
+            dcc_reap_kids(dcc_nkids == dcc_max_kids);
 
             /* Another little safety brake here: since children should not exit
              * too quickly, pausing before starting them should be harmless. */
