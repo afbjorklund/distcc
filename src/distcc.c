@@ -91,6 +91,7 @@ static void dcc_show_usage(void)
 "Environment variables:\n"
 "   See the manual page for a complete list.\n"
 "   DISTCC_VERBOSE=1           give debug messages\n"
+"   DISTCC_TIMESTAMP=1         timestamp messages\n"
 "   DISTCC_LOG                 send messages to file, not stderr\n"
 "   DISTCC_SSH                 command to run to open SSH connections\n"
 "   DISTCC_DIR                 directory for host list and locks\n"

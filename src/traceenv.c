@@ -85,7 +85,10 @@ void dcc_set_trace_from_env(void)
         level = RS_LOG_DEBUG;
     }
 
-    rs_add_logger(rs_logger_file, level, NULL, fd);
+    if (dcc_getenv_bool("DISTCC_TIMESTAMP", 0))
+        rs_add_logger(rs_logger_time, level, NULL, fd);
+    else
+        rs_add_logger(rs_logger_file, level, NULL, fd);
 
     if (failed_to_open_logfile) {
         rs_log_error("failed to open logfile %s: %s",

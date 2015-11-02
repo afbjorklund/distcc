@@ -95,7 +95,8 @@ enum {
                                    message. */
 
     RS_LOG_NO_PROGRAM   = 16,
-    RS_LOG_NO_PID       = 32
+    RS_LOG_NO_PID       = 32,
+    RS_LOG_TIMESTAMP    = 64
 };
 
 
@@ -123,6 +124,9 @@ void rs_remove_all_loggers(void);
 
 
 void rs_logger_file(int level, const char *fn, char const *fmt, va_list va,
+                    void *, int);
+
+void rs_logger_time(int level, const char *fn, char const *fmt, va_list va,
                     void *, int);
 
 void rs_logger_syslog(int level, const char *fn, char const *fmt, va_list va,

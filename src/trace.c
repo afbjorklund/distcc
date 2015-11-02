@@ -38,6 +38,8 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include <syslog.h>
+#include <sys/time.h>
+#include <time.h>
 
 #include "trace.h"
 #include "snprintf.h"
@@ -247,7 +249,17 @@ void rs_format_msg(char *buf,
         len = strlen(buf);
     }
 
-    if (!(flags & RS_LOG_NO_PID)) {
+    if (flags & RS_LOG_TIMESTAMP) {
+        char timestamp[100];
+        struct timeval tv;
+        struct tm *tm;
+
+        gettimeofday(&tv, NULL);
+        tm = localtime(&tv.tv_sec);
+        strftime(timestamp, sizeof(timestamp), "%Y-%m-%dT%H:%M:%S", tm);
+        snprintf(buf+len, buf_len-len,
+                 "[%s.%06d %d] ", timestamp, (int)tv.tv_usec, (int)getpid());
+    } else if (!(flags & RS_LOG_NO_PID)) {
         /* You might like to cache the pid, but that would cause trouble when we fork. */
         sprintf(buf+len, "[%d] ", (int) getpid());
     } else if (~flags & RS_LOG_NO_PROGRAM) {
@@ -330,7 +342,25 @@ rs_logger_file(int flags, const char *fn, char const *fmt, va_list va,
     (void) write(log_fd, buf, len+1);
 }
 
+void
+rs_logger_time(int flags, const char *fn, char const *fmt, va_list va,
+               void * UNUSED(private_ptr), int log_fd)
+{
+    /* NOTE NO TRAILING NUL */
+    char buf[4090];
+    size_t len;
 
+    rs_format_msg(buf, sizeof buf,
+                  flags | RS_LOG_NO_PROGRAM | RS_LOG_TIMESTAMP,
+                  fn, fmt, va);
+
+    len = strlen(buf);
+    if (len > (int) sizeof buf - 2)
+        len = (int) sizeof buf - 2;
+    strcpy(&buf[len], "\n");
+
+    (void) write(log_fd, buf, len+1);
+}
 
 /* ======================================================================== */
 /* functions for handling compilers without varargs macros */
