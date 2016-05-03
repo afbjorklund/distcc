@@ -373,6 +373,7 @@ static int dcc_compile_local(char *argv[],
     pid_t pid;
     int ret;
     int status;
+    int verbose;
 
     dcc_note_execution(dcc_hostdef_local, argv);
     dcc_note_state(DCC_PHASE_COMPILE, input_name, "localhost", DCC_LOCAL);
@@ -385,8 +386,9 @@ static int dcc_compile_local(char *argv[],
     if ((ret = dcc_collect_child("cc", pid, &status, timeout_null_fd)))
         return ret;
 
+    verbose = !dcc_getenv_bool("DISTCC_TRANSPARENT", 0);
     return dcc_critique_status(status, "compile", input_name,
-                               dcc_hostdef_local, 1);
+                               dcc_hostdef_local, verbose);
 }
 
 
@@ -504,6 +506,8 @@ dcc_build_somewhere(char *argv[],
     struct dcc_hostdef *host = NULL;
     char *discrepancy_filename = NULL;
     char **new_argv;
+    int verbose = 1;
+    int logmode = RS_LOG_WARNING;
 
     if ((ret = dcc_expand_preprocessor_options(&argv)) != 0)
         goto clean_up;
@@ -655,7 +659,9 @@ dcc_build_somewhere(char *argv[],
     dcc_unlock(cpu_lock_fd);
     cpu_lock_fd = -1;
 
-    ret = dcc_critique_status(*status, "compile", input_fname, host, 1);
+    verbose = !dcc_getenv_bool("DISTCC_TRANSPARENT", 0);
+    logmode = verbose ? RS_LOG_WARNING : RS_LOG_INFO;
+    ret = dcc_critique_status(*status, "compile", input_fname, host, verbose);
     if (ret == 0) {
         /* Try to copy the server-side errors on stderr.
          * If that fails, even though the compilation succeeded,
@@ -700,8 +706,8 @@ dcc_build_somewhere(char *argv[],
             /* Not retrying */
             goto clean_up;
         } else {
-            rs_log_warning("remote compilation of '%s' failed, retrying locally",
-                           input_fname);
+            rs_log(logmode, "remote compilation of '%s' failed, retrying locally",
+                   input_fname);
             remote_ret = ret;
             goto fallback;
         }
@@ -738,12 +744,12 @@ dcc_build_somewhere(char *argv[],
 
     /* "You guys are so lazy!  Do I have to do all the work myself??" */
     if (host) {
-        rs_log(RS_LOG_WARNING|RS_LOG_NONAME,
+        rs_log(logmode|RS_LOG_NONAME,
                "failed to distribute %s to %s, running locally instead",
                input_fname ? input_fname : "(unknown)",
                host->hostdef_string);
     } else {
-        rs_log_warning("failed to distribute, running locally instead");
+        rs_log(logmode, "failed to distribute, running locally instead");
     }
 
   lock_local:
